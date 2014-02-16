@@ -1,0 +1,104 @@
+<?xml version = "1.0" encoding = "ISO-8859-1"?>
+<project name="PGA" default="build" basedir=".">
+
+	<!--Set the output directories-->
+	<property name="build.dir" value="${basedir}/build" />
+	<property name="build.root.dir" value="${build.dir}/public_html" />
+	<property name="build.webinf.dir" value="${build.root.dir}/WEB-INF" />
+	<property name="build.metainf.dir" value="${build.root.dir}/META-INF" />
+	<property name="build.classes.dir" value="${build.webinf.dir}/classes" />
+	<property name="build.lib.dir" value="${build.webinf.dir}/lib" />
+
+	<property name="src.dir" value="src" />
+	<property name="lib.dir" value="${basedir}/lib" />
+	<property name="web.dir" value="${basedir}/WebContent" />
+	<property name="webinf.dir" value="${web.dir}/WEB-INF" />
+	<property name="war.name" value="pga.war" />
+
+	<!--Set the classpath-->
+	<path id="classpath">
+		<pathelement location="${build.classes.dir}" />
+
+		<fileset dir="${lib.dir}/">
+			<include name="asm.jar" />
+			<include name="eclipselink.jar" />
+			<include name="jackson-core-asl.jar" />
+			<include name="jackson-jaxrs.jar" />
+			<include name="jackson-mapper-asl.jar" />
+			<include name="jackson-xc.jar" />
+			<include name="javax.persistence.jar" />
+			<include name="jersey-client.jar" />
+			<include name="jersey-core.jar" />
+			<include name="jersey-json.jar" />
+			<include name="jersey-server.jar" />
+			<include name="jersey-servlet.jar" />
+			<include name="jsr311-api.jar" />
+			<include name="mysql-connector-java-5.1.6.jar" />
+		</fileset>
+	</path>
+
+	<!--Set the source path-->
+	<path id="srcpath">
+		<pathelement location="${basedir}/${src.dir}" />
+	</path>
+
+	<!--Do build setup-->
+	<target name="init" description="Init directories">
+		<echo>Building PGA</echo>
+
+		<mkdir dir="${build.root.dir}" />
+		<mkdir dir="${build.lib.dir}" />
+
+		<copy todir="${build.root.dir}">
+			<fileset dir="${web.dir}" />
+		</copy>
+
+		<copy todir="${build.lib.dir}">
+			<fileset dir="${lib.dir}" />
+		</copy>
+
+		<mkdir dir="${build.classes.dir}" />
+		<copy file="${src.dir}/META-INF/persistence.xml" todir="${build.classes.dir}"/>
+		
+	</target>
+
+	<!--Compile Java source files-->
+	<target name="compile" depends="init">
+		<javac destdir="${build.classes.dir}" debug="true">
+			<classpath refid="classpath" />
+			<src refid="srcpath" />
+			<include name="**/*.java" />
+		</javac>
+	</target>
+
+	<!--Create jar file-->
+	<target name="war" depends="compile" description="Make war file">
+		<tstamp>
+			<format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
+		</tstamp>
+		<manifest file="${build.metainf.dir}/MANIFEST.MF">
+			<attribute name="Built-Date" value="${TODAY}" />
+			<attribute name="App-Name" value="${ant.project.name}" />
+		</manifest>
+
+		<jar jarfile="${build.dir}/${war.name}" manifest="${build.metainf.dir}/MANIFEST.MF">
+			<fileset dir="${build.root.dir}">
+				<include name="**/*" />
+			</fileset>
+		</jar>
+		
+		<delete dir="${build.root.dir}" />
+		
+		
+ 	</target>
+
+	<!--Delete output directories-->
+
+	<target name="clean">
+		<delete dir="${build.dir}" />
+	</target>
+
+	<target name="all" depends="clean, war" />
+	<target name="build" depends="all" />
+
+</project>
