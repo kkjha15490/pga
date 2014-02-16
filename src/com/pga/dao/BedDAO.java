@@ -116,7 +116,4 @@ public class BedDAO {
 
 }
 
-public static void foo() {
-	system.out.println("Hello World");
-}
 
